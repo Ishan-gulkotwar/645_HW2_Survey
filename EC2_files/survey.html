@@ -1,0 +1,304 @@
+<!--
+    SWE645 Assignment 1 - Student Survey Form
+    This form collects feedback from prospective students about their campus experience.
+    Features include - personal information collection, campus preferences, interest source,
+    recommendation likelihood
+    Hosted on AWS EC2 instance running Apache web server.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Student Survey Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif;}
+        body {
+            background-image: url('https://www.gmu.edu/sites/g/files/yyf10241/f/202108/Aerial_Fairfax_Summer2021_Creative.jpg');
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-color: #006633;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
+            color: #777;
+            line-height: 1.8;
+        }
+        .required:after {
+            content: " *";
+            color: red;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        .header {
+            background-color: #006633 !important;
+            color: white;
+            padding: 128px 16px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            margin-top: 50px;
+        }
+        .w3-bar {
+            background-color: #006633;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .w3-bar a {
+            color: white !important;
+            text-decoration: none;
+            padding: 15px 20px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .w3-bar a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .w3-panel {
+            background-color: white;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 4px;
+        }
+        .submit-btn {
+            background-color: #006633 !important;
+            color: white !important;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<!-- Navigation Bar -->
+<div class="w3-top">
+    <div class="w3-bar" id="myNavbar">
+        <a class="w3-bar-item w3-button w3-hover-black w3-hide-medium w3-hide-large w3-right" href="javascript:void(0);" onclick="toggleFunction()" title="Toggle Navigation Menu">
+            <i class="fa fa-bars"></i>
+        </a>
+        <a href="http://swe-645-homepage.s3-website.ap-south-1.amazonaws.com/" class="w3-bar-item w3-button">HOME</a>
+    </div>
+</div>
+
+<script>
+// Used to toggle the menu on small screens when clicking on the menu button
+function toggleFunction() {
+    var x = document.getElementById("navDemo");
+    if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+    } else {
+        x.className = x.className.replace(" w3-show", "");
+    }
+}
+</script>
+
+<!-- Header -->
+<div class="header">
+    <h1>Student Survey Form</h1>
+    <p class="w3-large">Share your campus experience with us</p>
+</div>
+
+<div class="form-container">
+    <form class="w3-container" id="surveyForm">
+        <!-- Personal Information Section -->
+        <div class="w3-panel">
+            <h3>Personal Information</h3>
+            
+            <div class="w3-row-padding">
+                <div class="w3-half">
+                    <label class="required">First Name</label>
+                    <input class="w3-input w3-border" type="text" name="firstName" required>
+                </div>
+                <div class="w3-half">
+                    <label class="required">Last Name</label>
+                    <input class="w3-input w3-border" type="text" name="lastName" required>
+                </div>
+            </div>
+
+            <div class="w3-row-padding w3-padding-16">
+                <div class="w3-full">
+                    <label class="required">Street Address</label>
+                    <input class="w3-input w3-border" type="text" name="address" required>
+                </div>
+            </div>
+
+            <div class="w3-row-padding">
+                <div class="w3-third">
+                    <label class="required">City</label>
+                    <input class="w3-input w3-border" type="text" name="city" required>
+                </div>
+                <div class="w3-third">
+                    <label class="required">State</label>
+                    <input class="w3-input w3-border" type="text" name="state" required>
+                </div>
+                <div class="w3-third">
+                    <label class="required">ZIP</label>
+                    <input class="w3-input w3-border" type="text" name="zip" required>
+                </div>
+            </div>
+
+            <div class="w3-row-padding w3-padding-16">
+                <div class="w3-half">
+                    <label class="required">Telephone Number</label>
+                    <input class="w3-input w3-border" type="tel" name="phone" required>
+                </div>
+                <div class="w3-half">
+                    <label class="required">Email</label>
+                    <input class="w3-input w3-border" type="email" name="email" required>
+                </div>
+            </div>
+
+            <div class="w3-row-padding">
+                <div class="w3-half">
+                    <label class="required">Date of Survey</label>
+                    <input class="w3-input w3-border" type="date" name="surveyDate" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- Campus Features Section -->
+        <div class="w3-panel">
+            <h3>Campus Features</h3>
+            <p>What did you like most about the campus? (Check all that apply)</p>
+            
+            <div class="w3-row-padding">
+                <div class="w3-half">
+                    <label class="w3-check">
+                        <input type="checkbox" name="likes" value="students">
+                        <span class="w3-padding-small">Students</span>
+                    </label><br>
+                    <label class="w3-check">
+                        <input type="checkbox" name="likes" value="location">
+                        <span class="w3-padding-small">Location</span>
+                    </label><br>
+                    <label class="w3-check">
+                        <input type="checkbox" name="likes" value="campus">
+                        <span class="w3-padding-small">Campus</span>
+                    </label>
+                </div>
+                <div class="w3-half">
+                    <label class="w3-check">
+                        <input type="checkbox" name="likes" value="atmosphere">
+                        <span class="w3-padding-small">Atmosphere</span>
+                    </label><br>
+                    <label class="w3-check">
+                        <input type="checkbox" name="likes" value="dorm">
+                        <span class="w3-padding-small">Dorm Rooms</span>
+                    </label><br>
+                    <label class="w3-check">
+                        <input type="checkbox" name="likes" value="sports">
+                        <span class="w3-padding-small">Sports</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interest Source Section -->
+        <div class="w3-panel">
+            <h3>Source of Interest</h3>
+            <p>How did you become interested in the university?</p>
+            
+            <div class="w3-row-padding">
+                <div>
+                    <label class="w3-radio">
+                        <input type="radio" name="interest" value="friends" required>
+                        <span class="w3-padding-small">Friends</span>
+                    </label><br>
+                    <label class="w3-radio">
+                        <input type="radio" name="interest" value="television">
+                        <span class="w3-padding-small">Television</span>
+                    </label><br>
+                    <label class="w3-radio">
+                        <input type="radio" name="interest" value="internet">
+                        <span class="w3-padding-small">Internet</span>
+                    </label><br>
+                    <label class="w3-radio">
+                        <input type="radio" name="interest" value="other">
+                        <span class="w3-padding-small">Other</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendation Likelihood -->
+        <div class="w3-panel">
+            <h3>Recommendation Likelihood</h3>
+            <div class="w3-row-padding">
+                <div class="w3-full">
+                    <label>How likely are you to recommend this school to other prospective students?</label>
+                    <select class="w3-select w3-border" name="recommendation" required>
+                        <option value="" disabled selected>Choose your option</option>
+                        <option value="very_likely">Very Likely</option>
+                        <option value="likely">Likely</option>
+                        <option value="unlikely">Unlikely</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Raffle Section -->
+        <div class="w3-panel">
+            <h3>Raffle</h3>
+            <div class="w3-row-padding">
+                <div class="w3-full">
+                    <label>Enter at least ten comma-separated numbers (1-100)</label>
+                    <input class="w3-input w3-border" type="text" name="raffle" 
+                           placeholder="Enter numbers (e.g., 1,2,3,4,5,6,7,8,9,10)" required
+                           pattern="^\s*\d+\s*(,\s*\d+\s*){9,}$"
+                           title="Please enter at least 10 numbers separated by commas">
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="w3-panel">
+            <h3>Additional Comments</h3>
+            <div class="w3-row-padding">
+                <div class="w3-full">
+                    <textarea class="w3-input w3-border" rows="4" name="comments"
+                              placeholder="Please share any additional comments here"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="w3-panel">
+            <div class="w3-row-padding">
+                <div class="w3-half">
+                    <button class="w3-button w3-block submit-btn" type="submit">Submit Survey</button>
+                </div>
+                <div class="w3-half">
+                    <button class="w3-button w3-red w3-block" type="reset">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>
