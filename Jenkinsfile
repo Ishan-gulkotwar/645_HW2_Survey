@@ -1,42 +1,74 @@
 pipeline {
     agent any
-    
+
     environment {
-        DOCKER_HUB_CREDS = credentials('docker_credentials')
-        DOCKER_IMAGE = 'isginni/studentsurvey'
-        DOCKER_TAG = "${BUILD_NUMBER}"
+        DOCKER_CREDENTIALS_ID = 'docker_credentials'  // Ensure this exists in Jenkins credentials
     }
-    
+
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                git url: 'https://github.com/Ishan-gulkotwar/645_HW2_Survey.git', branch: 'master'
+                script {
+                    echo "Checking out code from GitHub..."
+                    checkout scm
+                }
             }
         }
-        
+
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .'
+                script {
+                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, 
+                                                     usernameVariable: 'DOCKER_USER', 
+                                                     passwordVariable: 'DOCKER_PASS')]) {
+                        echo "Logging into Docker..."
+                        sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+                    }
+                    
+                    echo "Building Docker image..."
+                    sh 'docker build -t my-app:latest .'
+                }
             }
         }
-        
-        stage('Push to DockerHub') {
+
+        stage('Run Tests') {
             steps {
-                sh 'echo $DOCKER_HUB_CREDS_PSW | docker login -u $DOCKER_HUB_CREDS_USR --password-stdin'
-                sh 'docker push ${DOCKER_IMAGE}:${DOCKER_TAG}'
+                script {
+                    echo "Running application tests..."
+                    sh 'docker run --rm my-app:latest pytest'
+                }
             }
         }
-        
-        stage('Deploy to Kubernetes') {
+
+        stage('Push to Docker Hub') {
             steps {
-                sh 'kubectl set image deployment/studentsurvey-deployment studentsurvey=${DOCKER_IMAGE}:${DOCKER_TAG}'
+                script {
+                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, 
+                                                     usernameVariable: 'DOCKER_USER', 
+                                                     passwordVariable: 'DOCKER_PASS')]) {
+                        echo "Tagging Docker image..."
+                        sh 'docker tag my-app:latest $DOCKER_USER/my-app:latest'
+
+                        echo "Pushing Docker image..."
+                        sh 'docker push $DOCKER_USER/my-app:latest'
+                    }
+                }
             }
         }
     }
-    
+
     post {
         always {
-            sh 'docker logout'
+            script {
+                echo "Cleaning up resources..."
+                sh 'docker logout || true'
+            }
+        }
+        success {
+            echo "Pipeline executed successfully!"
+        }
+        failure {
+            echo "Pipeline failed. Check logs for details."
         }
     }
 }
