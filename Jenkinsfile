@@ -2,56 +2,45 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'  // Ensure this exists in Jenkins credentials
+        DOCKER_CREDENTIALS = credentials('docker_credentials')
+        DOCKER_IMAGE = 'isginni/studentsurvey'
+        DOCKER_TAG = "latest"
     }
 
     stages {
         stage('Checkout Code') {
-            steps {
-                script {
-                    echo "Checking out code from GitHub..."
-                    checkout scm
-                }
+        steps {
+            script {
+                echo "Checking out code from GitHub..."
+                git branch: 'master', url: 'https://github.com/Ishan-gulkotwar/645_HW2_Survey.git'
             }
         }
+    }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, 
-                                                     usernameVariable: 'DOCKER_USER', 
-                                                     passwordVariable: 'DOCKER_PASS')]) {
-                        echo "Logging into Docker..."
+                    withCredentials([usernamePassword(credentialsId: 'docker_credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
                     }
-                    
-                    echo "Building Docker image..."
-                    sh 'docker build -t my-app:latest .'
+                    sh 'docker build -t $DOCKER_IMAGE:$DOCKER_TAG .'
                 }
             }
         }
 
-        stage('Run Tests') {
+        stage('Push to DockerHub') {
             steps {
                 script {
-                    echo "Running application tests..."
-                    sh 'docker run --rm my-app:latest pytest'
+                    sh 'docker push $DOCKER_IMAGE:$DOCKER_TAG'
                 }
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, 
-                                                     usernameVariable: 'DOCKER_USER', 
-                                                     passwordVariable: 'DOCKER_PASS')]) {
-                        echo "Tagging Docker image..."
-                        sh 'docker tag my-app:latest $DOCKER_USER/my-app:latest'
-
-                        echo "Pushing Docker image..."
-                        sh 'docker push $DOCKER_USER/my-app:latest'
-                    }
+                    sh 'kubectl apply -f deployment.yaml'
+                    sh 'kubectl apply -f service.yaml'
                 }
             }
         }
@@ -59,16 +48,14 @@ pipeline {
 
     post {
         always {
-            script {
-                echo "Cleaning up resources..."
-                sh 'docker logout || true'
-            }
+            sh 'docker logout'
         }
         success {
-            echo "Pipeline executed successfully!"
+            echo "Deployment Successful!"
         }
         failure {
-            echo "Pipeline failed. Check logs for details."
+            echo "Pipeline Failed!"
         }
     }
 }
+
