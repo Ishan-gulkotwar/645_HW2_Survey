@@ -2,8 +2,8 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'  // Ensure this exists in Jenkins credentials
-        DOCKER_IMAGE = 'isginni/studentsurvey'
+        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'  // Keeping this as requested
+        DOCKER_IMAGE_NAME = 'studentsurvey'  // Just the image name without username
     }
     
     stages {
@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     echo "Checking out code from GitHub..."
-                    git url: 'https://github.com/Ishan-gulkotwar/645_HW2_Survey.git', branch: 'master'
+                    git url: 'https://github.com/Ishan-gulkotwar/645_HW2_Survey.git', branch: 'main'  // Changed to 'main' (verify your branch name)
                 }
             }
         }
@@ -24,10 +24,10 @@ pipeline {
                                                      passwordVariable: 'DOCKER_PASS')]) {
                         echo "Logging into DockerHub..."
                         sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                        
+                        echo "Building Docker image..."
+                        sh "docker build -t $DOCKER_USER/$DOCKER_IMAGE_NAME:latest ."
                     }
-
-                    echo "Building Docker image..."
-                    sh "docker build -t $DOCKER_IMAGE:latest ."
                 }
             }
         }
@@ -37,27 +37,23 @@ pipeline {
                 script {
                     echo "Running application tests..."
                     sh 'echo "Tests temporarily skipped"'
-                    // Once pytest is added to Docker image: sh "docker run --rm $DOCKER_IMAGE:latest python3 -m pytest"
                 }
             }
         }
-
+        
         stage('Push to Docker Hub') {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, 
                                                      usernameVariable: 'DOCKER_USER', 
                                                      passwordVariable: 'DOCKER_PASS')]) {
-                        echo "Tagging Docker image..."
-                        sh "docker tag $DOCKER_IMAGE:latest $DOCKER_USER/$DOCKER_IMAGE:latest"
-
                         echo "Pushing Docker image..."
-                        sh "docker push $DOCKER_USER/$DOCKER_IMAGE:latest"
+                        sh "docker push $DOCKER_USER/$DOCKER_IMAGE_NAME:latest"
                     }
                 }
             }
         }
-
+        
         stage('Install kubectl') {
             steps {
                 sh '''
@@ -70,12 +66,15 @@ pipeline {
                 '''
             }
         }
-
+        
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    echo "Deploying to Kubernetes..."
-                    sh 'kubectl apply -f deployment.yaml'
+                    withCredentials([file(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
+                        echo "Deploying to Kubernetes..."
+                        sh "kubectl --kubeconfig=$KUBECONFIG apply -f deployment.yaml"
+                        sh "kubectl --kubeconfig=$KUBECONFIG set image deployment/studentsurvey-deployment studentsurvey=$DOCKER_USER/$DOCKER_IMAGE_NAME:latest"
+                    }
                 }
             }
         }
@@ -96,4 +95,3 @@ pipeline {
         }
     }
 }
-
