@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: studentsurvey-deployment
+  labels:
+    app: studentsurvey
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: studentsurvey
+  template:
+    metadata:
+      labels:
+        app: studentsurvey
+    spec:
+      containers:
+      - name: studentsurvey
+        image: isginni/studentsurvey:latest
+        ports:
+        - containerPort: 8080
