@@ -48,7 +48,7 @@ pipeline {
                                                      usernameVariable: 'DOCKER_USER', 
                                                      passwordVariable: 'DOCKER_PASS')]) {
                         echo "Tagging Docker image..."
-                        sh "docker tag $DOCKER_IMAGE:latest $DOCKER_USER/$DOCKER_IMAGE:latest"
+                        sh "docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:latest"
                         echo "Pushing Docker image..."
                         sh "docker push $DOCKER_USER/$DOCKER_IMAGE:latest"
                     }
