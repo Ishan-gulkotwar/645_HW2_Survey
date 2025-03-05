@@ -50,7 +50,7 @@ pipeline {
                         echo "Tagging Docker image..."
                         sh "docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:latest"
                         echo "Pushing Docker image..."
-                        sh "docker push $DOCKER_USER/$DOCKER_IMAGE:latest"
+                        sh "docker push $DOCKER_IMAGE:latest"
                     }
                 }
             }
