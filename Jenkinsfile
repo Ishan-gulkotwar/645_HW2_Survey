@@ -4,7 +4,8 @@ pipeline {
     environment {
         DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'  // Ensure this exists in Jenkins credentials
         KUBECONFIG_CREDENTIALS_ID = 'kubernetes-config'  // Your kubeconfig credential
-        DOCKER_IMAGE = 'isginni/studentsurvey'
+        DOCKER_USER = 'isginni'
+        DOCKER_IMAGE_NAME = 'studentsurvey'
     }
     
     stages {
